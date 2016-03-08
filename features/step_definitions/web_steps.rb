@@ -41,11 +41,39 @@ Given /^the blog is set up$/ do
                 :profile_id => 1,
                 :name => 'admin',
                 :state => 'active'})
+  User.create!({:login => 'ianfox',
+                :password => 'aaaaaaaa',
+                :email => 'ian@snow.com',
+                :profile_id => 2,
+                :name => 'ianfox',
+                :state => 'active'})
 end
 
-And /^I am logged into the admin panel$/ do
+Given /^I am logged into the admin panel$/ do
   visit '/accounts/login'
   fill_in 'user_login', :with => 'admin'
+  fill_in 'user_password', :with => 'aaaaaaaa'
+  click_button 'Login'
+  if page.respond_to? :should
+    page.should have_content('Login successful')
+  else
+    assert page.has_content?('Login successful')
+  end
+end
+
+When /^I make an article "(.*)"$/ do |article_name|
+  steps %Q{
+    Given I am on the new article page
+    When I fill in "article_title" with "#{article_name}"
+    And I fill in "article__body_and_extended_editor" with "Lorem Ipsum"
+    And I press "Publish"
+    Then I should be on the admin content page
+  }
+end
+
+Given /^I am logged into the user panel$/ do
+  visit '/accounts/login'
+  fill_in 'user_login', :with => 'ianfox'
   fill_in 'user_password', :with => 'aaaaaaaa'
   click_button 'Login'
   if page.respond_to? :should
